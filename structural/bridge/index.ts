@@ -1,79 +1,175 @@
 /**
  * Bridge Pattern
  * Decouples an abstraction from its implementation so the two can vary independently.
+ *
+ * Example: Remote Control with Devices
+ * The bridge separates the abstraction (RemoteControl) from implementations (Devices),
+ * allowing them to vary independently. Different remotes can control different devices.
  */
 
-// Implementation interface
-export interface Renderer {
-  renderCircle(radius: number): void;
-  renderSquare(side: number): void;
+// Implementation abstraction - different device types
+export interface Device {
+  powerOn(): void;
+  powerOff(): void;
+  setChannel(channel: number): void;
+  getChannel(): number;
+  setVolume(volume: number): void;
+  getVolume(): number;
 }
 
-// Concrete implementations
-export class RasterRenderer implements Renderer {
-  renderCircle(radius: number): void {
-    console.log(`Rendering circle with radius ${radius} as pixels`);
+// Concrete device implementations
+export class Television implements Device {
+  private channel = 1;
+  private volume = 50;
+  private power = false;
+
+  powerOn(): void {
+    this.power = true;
+    console.log('TV is powered on');
   }
 
-  renderSquare(side: number): void {
-    console.log(`Rendering square with side ${side} as pixels`);
-  }
-}
-
-export class VectorRenderer implements Renderer {
-  renderCircle(radius: number): void {
-    console.log(`Rendering circle with radius ${radius} as vectors`);
+  powerOff(): void {
+    this.power = false;
+    console.log('TV is powered off');
   }
 
-  renderSquare(side: number): void {
-    console.log(`Rendering square with side ${side} as vectors`);
-  }
-}
-
-// Abstraction
-export abstract class Shape {
-  protected renderer: Renderer;
-
-  constructor(renderer: Renderer) {
-    this.renderer = renderer;
+  setChannel(channel: number): void {
+    if (this.power) {
+      this.channel = channel;
+      console.log(`TV channel set to ${channel}`);
+    }
   }
 
-  abstract draw(): void;
-}
-
-// Refined abstractions
-export class Circle extends Shape {
-  private radius: number;
-
-  constructor(renderer: Renderer, radius: number) {
-    super(renderer);
-    this.radius = radius;
+  getChannel(): number {
+    return this.channel;
   }
 
-  draw(): void {
-    this.renderer.renderCircle(this.radius);
+  setVolume(volume: number): void {
+    if (this.power) {
+      this.volume = Math.max(0, Math.min(100, volume));
+      console.log(`TV volume set to ${this.volume}`);
+    }
+  }
+
+  getVolume(): number {
+    return this.volume;
   }
 }
 
-export class Square extends Shape {
-  private side: number;
+export class Radio implements Device {
+  private channel = 101.5;
+  private volume = 30;
+  private power = false;
 
-  constructor(renderer: Renderer, side: number) {
-    super(renderer);
-    this.side = side;
+  powerOn(): void {
+    this.power = true;
+    console.log('Radio is powered on');
   }
 
-  draw(): void {
-    this.renderer.renderSquare(this.side);
+  powerOff(): void {
+    this.power = false;
+    console.log('Radio is powered off');
+  }
+
+  setChannel(channel: number): void {
+    if (this.power) {
+      this.channel = 88 + (channel % 33) + Math.random() * 0.1;
+      console.log(`Radio tuned to ${this.channel.toFixed(1)} FM`);
+    }
+  }
+
+  getChannel(): number {
+    return this.channel;
+  }
+
+  setVolume(volume: number): void {
+    if (this.power) {
+      this.volume = Math.max(0, Math.min(100, volume));
+      console.log(`Radio volume set to ${this.volume}`);
+    }
+  }
+
+  getVolume(): number {
+    return this.volume;
+  }
+}
+
+// Abstraction - Remote control (bridges to devices)
+export abstract class RemoteControl {
+  protected device: Device;
+
+  constructor(device: Device) {
+    this.device = device;
+  }
+
+  abstract volumeUp(): void;
+  abstract volumeDown(): void;
+  abstract channelUp(): void;
+  abstract channelDown(): void;
+}
+
+// Concrete remote controls
+export class BasicRemote extends RemoteControl {
+  volumeUp(): void {
+    this.device.setVolume(this.device.getVolume() + 5);
+  }
+
+  volumeDown(): void {
+    this.device.setVolume(this.device.getVolume() - 5);
+  }
+
+  channelUp(): void {
+    this.device.setChannel(this.device.getChannel() + 1);
+  }
+
+  channelDown(): void {
+    this.device.setChannel(this.device.getChannel() - 1);
+  }
+}
+
+export class AdvancedRemote extends RemoteControl {
+  power(): void {
+    if (this.device.getVolume() > 0) {
+      this.device.powerOff();
+    } else {
+      this.device.powerOn();
+    }
+  }
+
+  volumeUp(): void {
+    this.device.setVolume(this.device.getVolume() + 10);
+  }
+
+  volumeDown(): void {
+    this.device.setVolume(this.device.getVolume() - 10);
+  }
+
+  channelUp(): void {
+    this.device.setChannel(this.device.getChannel() + 2);
+  }
+
+  channelDown(): void {
+    this.device.setChannel(this.device.getChannel() - 2);
   }
 }
 
 // Usage
-const rasterRenderer = new RasterRenderer();
-const vectorRenderer = new VectorRenderer();
+console.log('--- Remote Control with Devices Example ---\n');
 
-const rasterCircle = new Circle(rasterRenderer, 5);
-rasterCircle.draw();
+const tv = new Television();
+const basicRemote = new BasicRemote(tv);
 
-const vectorSquare = new Square(vectorRenderer, 10);
-vectorSquare.draw();
+tv.powerOn();
+basicRemote.channelUp();
+basicRemote.volumeUp();
+basicRemote.volumeUp();
+
+console.log('');
+
+const radio = new Radio();
+const advancedRemote = new AdvancedRemote(radio);
+
+radio.powerOn();
+advancedRemote.channelUp();
+advancedRemote.volumeUp();
+advancedRemote.volumeUp();
