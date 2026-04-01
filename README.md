@@ -19,15 +19,6 @@ npm run lint
 # Fix linting issues
 npm run lint:fix
 
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with coverage
-npm run test:coverage
-
 # Execute a pattern file
 npm run pattern -- <path-to-pattern>
 ```
@@ -105,7 +96,6 @@ design-patterns/
 
 - **ESLint**: `.eslintrc.json` - TypeScript linting rules
 - **TypeScript**: `tsconfig.json` - Compiler configuration
-- **Jest**: `jest.config.js` - Test configuration
 
 ## Running Examples
 
